@@ -1,60 +1,73 @@
-import { Button } from "@whop/react/components";
-import { headers } from "next/headers";
-import Link from "next/link";
-import { whopsdk } from "@/lib/whop-sdk";
+'use client'; // Obligatorio para la lógica del cronómetro
 
-export default async function ExperiencePage({
-	params,
-}: {
-	params: Promise<{ experienceId: string }>;
-}) {
-	const { experienceId } = await params;
-	// Ensure the user is logged in on whop.
-	const { userId } = await whopsdk.verifyUserToken(await headers());
+import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-	// Fetch the neccessary data we want from whop.
-	const [experience, user, access] = await Promise.all([
-		whopsdk.experiences.retrieve(experienceId),
-		whopsdk.users.retrieve(userId),
-		whopsdk.users.checkAccess(experienceId, { id: userId }),
-	]);
+// Inicializamos Supabase con las llaves que ya tienes en Vercel
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-	const displayName = user.name || `@${user.username}`;
+export default function PomodoroPage() {
+  const [seconds, setSeconds] = useState(1500); // 25 minutos
+  const [isActive, setIsActive] = useState(false);
 
-	return (
-		<div className="flex flex-col p-8 gap-4">
-			<div className="flex justify-between items-center gap-4">
-				<h1 className="text-9">
-					Hi <strong>{displayName}</strong>!
-				</h1>
-				<Link href="https://docs.whop.com/apps" target="_blank">
-					<Button variant="classic" className="w-full" size="3">
-						Developer Docs
-					</Button>
-				</Link>
-			</div>
+  useEffect(() => {
+    let interval: any = null;
+    if (isActive && seconds > 0) {
+      interval = setInterval(() => {
+        setSeconds((seconds) => seconds - 1);
+      }, 1000);
+    } else if (seconds === 0) {
+      clearInterval(interval);
+      saveSession(); // Guardar en Supabase al terminar
+    }
+    return () => clearInterval(interval);
+  }, [isActive, seconds]);
 
-			<p className="text-3 text-gray-10">
-				Welcome to you whop app! Replace this template with your own app. To
-				get you started, here's some helpful data you can fetch from whop.
-			</p>
+  const saveSession = async () => {
+    // Aquí es donde guardamos el progreso en tu base de datos
+    const { error } = await supabase
+      .from('focus_sessions')
+      .insert([{ duration: 1500, status: 'completed' }]);
+    
+    if (error) console.error("Error guardando:", error);
+  };
 
-			<h3 className="text-6 font-bold">Experience data</h3>
-			<JsonViewer data={experience} />
+  const formatTime = (s: number) => {
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
-			<h3 className="text-6 font-bold">User data</h3>
-			<JsonViewer data={user} />
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#000] text-white font-sans">
+      <div className="text-center space-y-8">
+        <h1 className="text-sm uppercase tracking-[0.3em] text-blue-400 font-bold">Modo Enfoque</h1>
+        
+        {/* Círculo de Progreso Minimalista */}
+        <div className="relative w-72 h-72 flex items-center justify-center border-[1px] border-blue-500/30 rounded-full shadow-[0_0_50px_-12px_rgba(59,130,246,0.5)]">
+          <span className="text-7xl font-light tracking-tighter tabular-nums">
+            {formatTime(seconds)}
+          </span>
+        </div>
 
-			<h3 className="text-6 font-bold">Access data</h3>
-			<JsonViewer data={access} />
-		</div>
-	);
-}
-
-function JsonViewer({ data }: { data: any }) {
-	return (
-		<pre className="text-2 border border-gray-a4 rounded-lg p-4 bg-gray-a2 max-h-72 overflow-y-auto">
-			<code className="text-gray-10">{JSON.stringify(data, null, 2)}</code>
-		</pre>
-	);
+        <div className="flex gap-6 justify-center">
+          <button 
+            onClick={() => setIsActive(!isActive)}
+            className="px-10 py-3 bg-white text-black rounded-full font-bold hover:bg-blue-500 hover:text-white transition-all duration-300"
+          >
+            {isActive ? 'PAUSA' : 'INICIAR'}
+          </button>
+          <button 
+            onClick={() => {setIsActive(false); setSeconds(1500);}}
+            className="px-10 py-3 bg-transparent border border-white/20 rounded-full font-bold hover:bg-white/10 transition-all"
+          >
+            RESETEAR
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
