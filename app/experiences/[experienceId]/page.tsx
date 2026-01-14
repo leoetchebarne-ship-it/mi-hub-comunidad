@@ -2,25 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 
-const STAGES = ['PLANIFICACIÓN', 'DISEÑO', 'EJECUCIÓN', 'MONITOREO', 'AJUSTE', 'CIERRE'];
-
-export default function AdvancedFrontEnd() {
+export default function ArchitectedFrontEnd() {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(1);
-  const [showPlanModal, setShowPlanModal] = useState(false);
-  
-  // Datos locales para simular el Front-End
-  const [tasks, setTasks] = useState([
-    { id: 1, title: 'Investigación de Mercado', week: 1, stage: 'PLANIFICACIÓN', subtasks: ['Google Trends', 'Análisis Competencia'] },
-  ]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [view, setView] = useState('focus'); // focus, community, history
 
+  // Lógica de cronómetro local
   useEffect(() => {
     let interval: any = null;
     if (isActive) {
       interval = setInterval(() => setSeconds(s => s + 1), 1000);
-    } else {
-      clearInterval(interval);
     }
     return () => clearInterval(interval);
   }, [isActive]);
@@ -33,132 +25,78 @@ export default function AdvancedFrontEnd() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans p-6 md:p-10 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden font-sans">
       
-      {/* 1. HEADER: PROGRESS TRACKER */}
-      <div className="flex justify-between items-center mb-10">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-xs font-black shadow-[0_0_20px_rgba(59,130,246,0.3)]">L</div>
-          <div className="hidden md:block">
-            <h2 className="text-[10px] font-black tracking-[0.3em] uppercase opacity-80">Leonardo</h2>
-            <div className="flex gap-1 mt-1">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className={`w-3 h-1 rounded-full ${i < selectedWeek ? 'bg-blue-500' : 'bg-white/10'}`}></div>
-              ))}
-            </div>
-          </div>
+      {/* BARRA DE NAVEGACIÓN LATERAL (Sidebar) */}
+      <nav className="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-8 gap-10 bg-black z-50">
+        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black">L</div>
+        <div className="flex flex-col gap-6 flex-1">
+          <button onClick={() => setView('focus')} className={`p-3 rounded-xl transition-all ${view === 'focus' ? 'bg-white/10 text-blue-400' : 'text-gray-600'}`}>⏱</button>
+          <button onClick={() => setView('community')} className={`p-3 rounded-xl transition-all ${view === 'community' ? 'bg-white/10 text-blue-400' : 'text-gray-600'}`}>👥</button>
+          <button onClick={() => setView('history')} className={`p-3 rounded-xl transition-all ${view === 'history' ? 'bg-white/10 text-blue-400' : 'text-gray-600'}`}>📊</button>
         </div>
-        <div className="bg-white/5 border border-white/10 px-6 py-2 rounded-full backdrop-blur-md">
-          <p className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Semana {selectedWeek} <span className="text-gray-600">/ 12</span></p>
-        </div>
-      </div>
+        <button className="text-gray-700 text-xs">LOGOUT</button>
+      </nav>
 
-      <div className="flex-1 grid grid-cols-12 gap-10 items-center">
-        
-        {/* 2. TIMELINE: MINI CALENDARIO */}
-        <div className="col-span-12 md:col-span-2 space-y-3 order-2 md:order-1">
-          <p className="text-[8px] font-black text-gray-700 uppercase tracking-[0.2em] mb-4">Estructura Temporal</p>
-          <div className="grid grid-cols-6 md:grid-cols-2 gap-2">
-            {[...Array(12)].map((_, i) => (
-              <button 
-                key={i} 
-                onClick={() => setSelectedWeek(i + 1)}
-                className={`py-3 text-[9px] rounded-lg border transition-all ${selectedWeek === i + 1 ? 'border-blue-500 bg-blue-500/10 text-blue-300' : 'border-white/5 text-gray-800 hover:text-gray-500'}`}
-              >
-                S{i + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 3. CORE: EL CRONÓMETRO */}
-        <div className="col-span-12 md:col-span-8 flex flex-col items-center order-1 md:order-2">
-          <div className="relative group p-10">
-            {/* Resplandor dinámico según el tiempo */}
-            <div className={`absolute inset-0 bg-blue-500 rounded-full blur-[80px] opacity-0 transition-opacity duration-1000 ${isActive ? 'opacity-10' : ''}`}></div>
-            
-            <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] rounded-full border border-white/5 flex flex-col items-center justify-center bg-black/40 backdrop-blur-3xl shadow-2xl">
-              <p className="text-[10px] text-gray-500 tracking-[0.6em] uppercase mb-4">Deep Work Session</p>
-              <h3 className="text-8xl md:text-[120px] font-thin tracking-tighter tabular-nums mb-10 text-white/90">{formatTime(seconds)}</h3>
-              
-              <div className="flex flex-col items-center gap-6">
+      <main className="flex-1 relative flex flex-col items-center justify-center p-6">
+        {/* VISTA DE ENFOQUE */}
+        {view === 'focus' && (
+          <div className="flex flex-col items-center animate-in fade-in zoom-in duration-500">
+            <div className="relative w-72 h-72 md:w-[400px] md:h-[400px] rounded-full border border-white/5 flex flex-col items-center justify-center bg-black/50 shadow-2xl">
+              <div className={`absolute inset-0 rounded-full border-t border-blue-500/20 ${isActive ? 'animate-spin-slow' : ''}`}></div>
+              <p className="text-[10px] text-gray-500 tracking-[0.4em] uppercase mb-4">Focus Mode</p>
+              <h1 className="text-7xl md:text-9xl font-thin tracking-tighter tabular-nums mb-10">{formatTime(seconds)}</h1>
+              <div className="flex gap-4">
                 <button 
                   onClick={() => setIsActive(!isActive)}
-                  className={`px-16 py-4 rounded-full text-[10px] font-black tracking-[0.4em] transition-all transform active:scale-95 ${isActive ? 'bg-white/5 border border-white/20 text-white hover:bg-white/10' : 'bg-blue-600 text-white shadow-[0_15px_30px_-10px_rgba(59,130,246,0.5)]'}`}
+                  className={`px-10 py-4 rounded-full text-[10px] font-black tracking-widest transition-all ${isActive ? 'bg-white/10' : 'bg-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.4)]'}`}
                 >
-                  {isActive ? 'PAUSAR' : 'INICIAR ENFOQUE'}
+                  {isActive ? 'PAUSAR' : 'INICIAR'}
                 </button>
-                
                 {seconds > 0 && (
-                  <button 
-                    onClick={() => {setIsActive(false); setSeconds(0)}}
-                    className="text-[9px] font-bold text-gray-600 hover:text-red-500 transition-colors uppercase tracking-widest"
-                  >
-                    Descartar Sesión
+                  <button className="px-6 py-4 rounded-full bg-red-900/20 text-red-500 text-[10px] font-black tracking-widest uppercase">
+                    Terminar
                   </button>
                 )}
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* 4. KANBAN VERTICAL: STATUS */}
-        <div className="col-span-12 md:col-span-2 h-full flex flex-col order-3">
-          <p className="text-[8px] font-black text-gray-700 uppercase tracking-[0.2em] mb-6 text-right">Flujo de Operación</p>
-          <div className="space-y-6">
-            {STAGES.map((stage, idx) => (
-              <div key={stage} className="text-right group">
-                <div className="flex items-center justify-end gap-3 mb-1">
-                  <span className={`text-[10px] transition-colors ${idx === 0 ? 'text-blue-400 font-black' : 'text-gray-700 group-hover:text-gray-400'}`}>{stage}</span>
-                  <div className={`w-1.5 h-1.5 rounded-full ${idx === 0 ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]' : 'bg-white/5'}`}></div>
+        {/* VISTA DE COMUNIDAD (Placeholder) */}
+        {view === 'community' && (
+          <div className="w-full max-w-md space-y-4 animate-in slide-in-from-right-10 duration-500">
+            <h2 className="text-xl font-light tracking-tighter border-b border-white/5 pb-4">Operaciones en Vivo</h2>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white/5 p-4 rounded-2xl flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full bg-gray-800"></div>
+                <div>
+                  <p className="text-xs font-bold">Usuario_{i}</p>
+                  <p className="text-[10px] text-blue-500 uppercase tracking-widest">Diseñando • 01:24:00</p>
                 </div>
-                <div className="h-[1px] w-full bg-gradient-to-l from-white/10 to-transparent"></div>
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* 5. ACCIÓN FINAL */}
-      <div className="mt-auto pt-10 flex flex-col items-center gap-4">
-        <button 
-          onClick={() => setShowPlanModal(true)}
-          className="group relative flex items-center gap-4 px-8 py-4 bg-white/[0.03] border border-white/5 rounded-2xl hover:bg-white/[0.07] transition-all"
-        >
-          <span className="text-blue-500 text-xl font-light">+</span>
-          <span className="text-[10px] font-black tracking-[0.3em] uppercase">Registrar Nueva Tarea en Ciclo</span>
-        </button>
-        <p className="text-[8px] text-gray-700 font-medium">LOS DATOS SE SINCRONIZARÁN AL FINALIZAR LA SESIÓN</p>
-      </div>
-
-      {/* MODAL DE PLANIFICACIÓN */}
-      {showPlanModal && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="w-full max-w-xl bg-black border border-white/10 p-10 rounded-[40px] shadow-2xl space-y-10">
-            <header>
-              <h2 className="text-2xl font-light tracking-tighter">Planificación Estratégica</h2>
-              <p className="text-[9px] text-blue-500 uppercase tracking-[0.4em] mt-2">Configuración de Tarea</p>
-            </header>
-            
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <label className="text-[8px] uppercase text-gray-500 font-black tracking-widest">Definición de Objetivo</label>
-                <input type="text" className="w-full bg-transparent border-b border-white/10 py-4 outline-none focus:border-blue-500 text-lg font-light transition-all" placeholder="Ej: Diseño de Interfaz de Usuario" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-[8px] uppercase text-gray-500 font-black tracking-widest">Resultado de Éxito (Métrica)</label>
-                <input type="text" className="w-full bg-transparent border-b border-white/10 py-4 outline-none focus:border-blue-500 text-lg font-light transition-all" placeholder="Ej: 3 pantallas terminadas en Figma" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 pt-6">
-                <button onClick={() => setShowPlanModal(false)} className="py-5 text-[10px] font-black text-gray-600 uppercase tracking-widest hover:text-white transition-colors">Cerrar</button>
-                <button className="bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-900/20 active:scale-95 transition-transform">Guardar en Ciclo</button>
-              </div>
+        {/* PANEL EXPANDIBLE (FLECHITA) */}
+        <div className={`fixed right-0 top-0 h-full bg-[#0a0a0a] border-l border-white/5 transition-all duration-500 z-40 ${isSidebarOpen ? 'w-80' : 'w-0'}`}>
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="absolute -left-10 top-1/2 -translate-y-1/2 bg-[#0a0a0a] border border-white/5 p-3 rounded-l-xl text-blue-500"
+          >
+            {isSidebarOpen ? '→' : '←'}
+          </button>
+          
+          <div className={`p-8 w-80 space-y-8 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <h3 className="text-xs font-black tracking-widest text-gray-500 uppercase">Configuración de Tarea</h3>
+            <div className="space-y-4">
+              <input type="text" className="w-full bg-transparent border-b border-white/5 py-3 text-sm outline-none focus:border-blue-500" placeholder="¿Cuál es el objetivo?" />
+              <button className="w-full bg-blue-600 py-4 rounded-xl text-[10px] font-black uppercase">Guardar Cambios</button>
             </div>
           </div>
         </div>
-      )}
+      </main>
     </div>
   );
 }
