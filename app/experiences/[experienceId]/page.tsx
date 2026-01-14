@@ -10,23 +10,23 @@ const supabase = createClient(
 
 const STAGES = ['PLANIFICACIÓN', 'DISEÑO', 'EJECUCIÓN', 'MONITOREO', 'AJUSTE', 'CIERRE'];
 
-export default function RefinedProjectPage() {
+export default function MobileOptimizedPage() {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [showForm, setShowForm] = useState(false);
 
-  // ARREGLO DEL CONTADOR: Ahora sí cuenta
+  // Lógica de cronómetro corregida
   useEffect(() => {
-    let interval: any = null;
+    let interval: NodeJS.Timeout | null = null;
     if (isActive) {
       interval = setInterval(() => {
-        setSeconds((s) => s + 1);
+        setSeconds((prev) => prev + 1);
       }, 1000);
-    } else {
+    } else if (interval) {
       clearInterval(interval);
     }
-    return () => clearInterval(interval);
+    return () => { if (interval) clearInterval(interval); };
   }, [isActive]);
 
   const formatTime = (s: number) => {
@@ -36,84 +36,78 @@ export default function RefinedProjectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 font-sans overflow-hidden flex flex-col">
-      {/* HEADER: AHORA CON TU PERFIL */}
-      <div className="flex justify-between items-center z-10">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-blue-600 border border-blue-400 flex items-center justify-center font-bold text-sm shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-            L
-          </div>
+    <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans flex flex-col overflow-x-hidden">
+      {/* HEADER DINÁMICO */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-600 border border-blue-400 flex items-center justify-center font-bold text-xs shadow-lg shadow-blue-500/20">L</div>
           <div>
-            <h1 className="text-sm font-bold tracking-[0.2em] text-white/90 uppercase">Leonardo</h1>
-            <p className="text-[8px] text-blue-500 tracking-[0.4em] uppercase">Project Lead | Operaciones</p>
+            <h1 className="text-[10px] md:text-xs font-bold tracking-widest uppercase">LEONARDO</h1>
+            <p className="text-[7px] text-blue-500 tracking-[0.3em] uppercase">PROJECT LEAD</p>
           </div>
         </div>
-        <div className="bg-white/5 p-2 px-6 rounded-full border border-white/10 shadow-2xl">
-          <span className="text-[10px] font-black tracking-widest text-blue-400 uppercase">Semana {selectedWeek} / 12</span>
+        <div className="bg-white/5 px-4 py-2 rounded-full border border-white/10">
+          <span className="text-[9px] font-black text-blue-400">SEMANA {selectedWeek} / 12</span>
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-12 gap-12 items-center">
-        {/* TIMELINE IZQUIERDA */}
-        <div className="col-span-2 space-y-4">
-          <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-4">Planificación Temporal</p>
-          <div className="grid grid-cols-2 gap-2">
+      {/* CONTENIDO PRINCIPAL: RESPONSIVE */}
+      <div className="flex-1 flex flex-col md:flex-row gap-8 items-center justify-around">
+        
+        {/* SEMANAS (Ocultas en móviles pequeños o compactadas) */}
+        <div className="w-full md:w-auto order-2 md:order-1">
+          <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mb-3 text-center md:text-left">Timeline</p>
+          <div className="flex md:grid md:grid-cols-2 gap-1 overflow-x-auto pb-2 md:pb-0">
             {[...Array(12)].map((_, i) => (
-              <button key={i} onClick={() => setSelectedWeek(i + 1)} className={`py-3 text-[9px] rounded-md border transition-all ${selectedWeek === i + 1 ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'border-white/5 text-gray-700'}`}>
+              <button key={i} onClick={() => setSelectedWeek(i + 1)} className={`min-w-[40px] py-2 text-[9px] rounded border transition-all ${selectedWeek === i + 1 ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'border-white/5 text-gray-700'}`}>
                 S{i + 1}
               </button>
             ))}
           </div>
         </div>
 
-        {/* CENTRO: EL CRONÓMETRO */}
-        <div className="col-span-8 flex flex-col items-center justify-center">
-          <div className="relative w-80 h-80 flex items-center justify-center rounded-full bg-black border border-blue-500/20 shadow-[0_0_80px_-20px_rgba(59,130,246,0.3)]">
-            <div className={`absolute inset-0 rounded-full border-t-2 border-blue-500/40 ${isActive ? 'animate-spin-slow' : ''}`}></div>
+        {/* CÍRCULO CENTRAL: EL CORAZÓN */}
+        <div className="relative order-1 md:order-2">
+          <div className={`w-64 h-64 md:w-80 md:h-80 flex items-center justify-center rounded-full bg-black border border-blue-500/10 shadow-[0_0_60px_-20px_rgba(59,130,246,0.3)] transition-all ${isActive ? 'scale-105' : 'scale-100'}`}>
+            <div className={`absolute inset-0 rounded-full border-t border-blue-500/30 ${isActive ? 'animate-spin-slow' : ''}`}></div>
             <div className="text-center">
-              <p className="text-[9px] text-gray-500 tracking-[0.3em] uppercase mb-2">Focus Time</p>
-              <span className="text-7xl font-light tabular-nums text-white">
-                {formatTime(seconds)}
-              </span>
-              <div className="mt-8">
+              <p className="text-[8px] text-gray-500 tracking-widest uppercase mb-1">Focus Time</p>
+              <span className="text-6xl md:text-7xl font-thin tabular-nums">{formatTime(seconds)}</span>
+              <div className="mt-6">
                 <button 
                   onClick={() => setIsActive(!isActive)}
-                  className={`px-8 py-3 rounded-full text-[9px] font-black tracking-widest transition-all ${isActive ? 'bg-white/5 border border-white/20 text-white' : 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'}`}
+                  className={`px-8 py-3 rounded-full text-[9px] font-black tracking-widest transition-all active:scale-90 ${isActive ? 'bg-transparent border border-white/20' : 'bg-blue-600 shadow-xl shadow-blue-900/40'}`}
                 >
-                  {isActive ? 'DETENER' : 'INICIAR ENFOQUE'}
+                  {isActive ? 'PAUSAR' : 'INICIAR'}
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* DERECHA: ESTADOS KANBAN */}
-        <div className="col-span-2 flex flex-col gap-6">
-          <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest text-right">Fase de Proyecto</p>
-          {STAGES.map((stage) => (
-            <div key={stage} className="text-right group cursor-pointer">
-              <p className="text-[10px] text-gray-500 group-hover:text-blue-400 transition-colors uppercase tracking-tighter">{stage}</p>
-              <div className="h-[1px] w-full bg-white/5 mt-1 group-hover:bg-blue-500/50"></div>
-            </div>
-          ))}
+        {/* ETAPAS (Vertical en Desktop, Horizontal en Móvil) */}
+        <div className="w-full md:w-auto order-3 space-y-4">
+          <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest text-center md:text-right">Fases del Ciclo</p>
+          <div className="flex md:flex-col justify-between md:gap-4 overflow-x-auto">
+            {STAGES.slice(0, 3).map((stage) => ( // Mostramos solo 3 en móvil para no saturar
+              <div key={stage} className="text-[8px] text-gray-500 border-b border-white/5 pb-1 px-2">{stage}</div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* FOOTER: FORMULARIO DE PLANIFICACIÓN */}
-      <div className="mt-auto border-t border-white/5 pt-6 bg-black">
+      {/* FOOTER: FORMULARIO MEJORADO */}
+      <div className="mt-6 border-t border-white/5 pt-4">
         {!showForm ? (
-          <button onClick={() => setShowForm(true)} className="text-[10px] font-black text-blue-500 hover:text-blue-300 tracking-widest uppercase">
-            + Abrir Planificador de Tarea (Etapa de Investigación)
+          <button onClick={() => setShowForm(true)} className="w-full py-4 text-[9px] font-black text-blue-500 uppercase tracking-widest bg-white/5 rounded-lg border border-dashed border-white/10">
+            + PLANIFICAR NUEVA ETAPA
           </button>
         ) : (
-          <div className="flex gap-8 items-end animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex-1 space-y-4">
-              <input type="text" placeholder="¿Cuál es el objetivo de esta etapa?" className="bg-transparent border-b border-white/10 w-full text-sm py-2 focus:border-blue-500 outline-none" />
-              <input type="text" placeholder="¿Qué resultado esperas obtener?" className="bg-transparent border-b border-white/10 w-full text-sm py-2 focus:border-blue-500 outline-none" />
-            </div>
-            <div className="flex gap-4">
-              <button onClick={() => setShowForm(false)} className="text-[10px] text-gray-500 uppercase font-bold">Cancelar</button>
-              <button className="bg-blue-600 px-6 py-2 rounded text-[10px] font-black uppercase">Registrar en Ciclo</button>
+          <div className="space-y-4 animate-in slide-in-from-bottom-2">
+            <input type="text" placeholder="¿Objetivo de la etapa?" className="w-full bg-transparent border-b border-white/10 py-2 text-xs outline-none focus:border-blue-500" />
+            <div className="flex gap-2">
+              <button onClick={() => setShowForm(false)} className="flex-1 py-3 text-[8px] font-bold text-gray-500 uppercase">Cerrar</button>
+              <button className="flex-[2] bg-blue-600 py-3 rounded text-[9px] font-black uppercase">REGISTRAR EN SUPABASE</button>
             </div>
           </div>
         )}
