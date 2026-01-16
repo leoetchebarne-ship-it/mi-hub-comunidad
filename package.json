@@ -21,7 +21,7 @@
     "tailwind-merge": "latest",
     "recharts": "latest",
     "class-variance-authority": "latest"
-}
+},
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.6",
