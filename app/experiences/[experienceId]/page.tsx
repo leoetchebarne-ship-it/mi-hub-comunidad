@@ -1,88 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils'; // Usamos tu archivo de utilidades
+import React from 'react';
 
-export default function ExperiencePage({ params }: { params: { experienceId: string } }) {
-  const [seconds, setSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [view, setView] = useState('focus');
-
-  // Lógica de cronómetro
-  useEffect(() => {
-    let interval: any = null;
-    if (isActive) {
-      interval = setInterval(() => setSeconds(s => s + 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isActive]);
-
-  const formatTime = (s: number) => {
-    const hrs = Math.floor(s / 3600);
-    const mins = Math.floor((s % 3600) / 60);
-    const secs = s % 60;
-    return `${hrs > 0 ? hrs + ':' : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
+// Intentamos una importación relativa directa para evitar errores de alias
+// Si 'lib' está dos niveles arriba de 'experiences/[id]', usa ../../
+export default function ExperiencePage({ params }: any) {
+  // Usamos un try-catch básico visual
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden font-sans">
-      
-      {/* BARRA DE NAVEGACIÓN LATERAL */}
-      <nav className="w-16 md:w-20 border-r border-white/5 flex flex-col items-center py-8 gap-10 bg-black z-50">
-        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white">
-          {params.experienceId.substring(0, 1).toUpperCase()}
-        </div>
-        <div className="flex flex-col gap-6 flex-1">
-          <button onClick={() => setView('focus')} className={cn("p-3 rounded-xl transition-all", view === 'focus' ? 'bg-white/10 text-blue-400' : 'text-gray-600')}>⏱</button>
-          <button onClick={() => setView('community')} className={cn("p-3 rounded-xl transition-all", view === 'community' ? 'bg-white/10 text-blue-400' : 'text-gray-600')}>👥</button>
-          <button onClick={() => setView('history')} className={cn("p-3 rounded-xl transition-all", view === 'history' ? 'bg-white/10 text-blue-400' : 'text-gray-600')}>📊</button>
-        </div>
-      </nav>
-
-      <main className="flex-1 relative flex flex-col items-center justify-center p-6">
-        {/* VISTA DE ENFOQUE */}
-        {view === 'focus' && (
-          <div className="flex flex-col items-center">
-            <div className="relative w-72 h-72 md:w-[400px] md:h-[400px] rounded-full border border-white/5 flex flex-col items-center justify-center bg-black/50 shadow-2xl">
-              <p className="text-[10px] text-gray-500 tracking-[0.4em] uppercase mb-4">ID: {params.experienceId}</p>
-              <h1 className="text-7xl md:text-9xl font-thin tracking-tighter tabular-nums mb-10">{formatTime(seconds)}</h1>
-              <div className="flex gap-4">
-                <button 
-                  onClick={() => setIsActive(!isActive)}
-                  className={cn("px-10 py-4 rounded-full text-[10px] font-black tracking-widest transition-all", 
-                    isActive ? 'bg-white/10' : 'bg-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.4)]')}
-                >
-                  {isActive ? 'PAUSAR' : 'INICIAR'}
-                </button>
-                {seconds > 0 && (
-                  <button onClick={() => setSeconds(0)} className="px-6 py-4 rounded-full bg-red-900/20 text-red-500 text-[10px] font-black tracking-widest uppercase">
-                    Reiniciar
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PANEL LATERAL DERECHO */}
-        <div className={cn("fixed right-0 top-0 h-full bg-[#0a0a0a] border-l border-white/5 transition-all duration-500 z-40", isSidebarOpen ? 'w-80' : 'w-0')}>
-          <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="absolute -left-10 top-1/2 -translate-y-1/2 bg-[#0a0a0a] border border-white/5 p-3 rounded-l-xl text-blue-500"
-          >
-            {isSidebarOpen ? '→' : '←'}
-          </button>
-          
-          <div className={cn("p-8 w-80 space-y-8", isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
-            <h3 className="text-xs font-black tracking-widest text-gray-500 uppercase">Ajustes del Lab</h3>
-            <div className="space-y-4">
-              <input type="text" className="w-full bg-transparent border-b border-white/5 py-3 text-sm outline-none focus:border-blue-500 text-white" placeholder="¿En qué vas a trabajar?" />
-              <button className="w-full bg-blue-600 py-4 rounded-xl text-[10px] font-black uppercase text-white">Guardar</button>
-            </div>
-          </div>
-        </div>
-      </main>
+    <div style={{ backgroundColor: 'black', color: 'white', height: '100vh', padding: '20px' }}>
+      <h1>Project Lab Status: Operativo</h1>
+      <p>Si ves esto, la estructura básica funciona.</p>
+      <button 
+        onClick={() => alert('Interactividad funcionando')}
+        style={{ padding: '10px', background: 'blue', borderRadius: '5px' }}
+      >
+        Probar Botón
+      </button>
     </div>
   );
 }
