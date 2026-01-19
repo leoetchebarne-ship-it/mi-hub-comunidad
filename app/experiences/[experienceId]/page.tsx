@@ -3,6 +3,8 @@
 import React, { useState, useEffect, use } from 'react';
 import { Timer, Users, BarChart3, ChevronLeft, ChevronRight, Play, Pause, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils'; 
+// 1. IMPORTAMOS TU NUEVO COMPONENTE
+import { CommunityPanel } from './_v0-imports/CommunityPanel';
 
 export default function ExperiencePage({ params }: { params: Promise<{ experienceId: string }> }) {
   const { experienceId } = use(params);
@@ -47,20 +49,22 @@ export default function ExperiencePage({ params }: { params: Promise<{ experienc
         </div>
       </nav>
 
-      <main className="flex-1 relative flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/5 via-transparent to-transparent">
+      {/* AJUSTE EN EL MAIN: Quitamos justify-center si estamos en community para que el scroll funcione bien */}
+      <main className={cn(
+        "flex-1 relative flex flex-col p-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/5 via-transparent to-transparent",
+        view === 'focus' ? "items-center justify-center" : "items-center pt-20"
+      )}>
         
+        {/* VISTA: FOCUS (Cronómetro) */}
         {view === 'focus' && (
           <div className="flex flex-col items-center">
-            {/* ANILLO DE LUZ SUTIL */}
             <div className="relative group">
               <div className={cn("absolute -inset-1 rounded-full bg-blue-500/20 blur-2xl transition-opacity duration-1000", isActive ? "opacity-100" : "opacity-0")}></div>
-              
               <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] rounded-full border border-white/5 flex flex-col items-center justify-center bg-black/40 backdrop-blur-3xl shadow-2xl">
                 <p className="text-[10px] text-blue-500/50 tracking-[0.6em] uppercase mb-6 font-bold">Deep Focus Active</p>
-                <h1 className="text-8xl md:text-[120px] font-extralight tracking-[ -0.05em] tabular-nums mb-12 text-white/90">
+                <h1 className="text-8xl md:text-[120px] font-extralight tracking-[-0.05em] tabular-nums mb-12 text-white/90">
                   {formatTime(seconds)}
                 </h1>
-                
                 <div className="flex items-center gap-6">
                   <button 
                     onClick={() => setIsActive(!isActive)}
@@ -69,7 +73,6 @@ export default function ExperiencePage({ params }: { params: Promise<{ experienc
                   >
                     {isActive ? <Pause size={28} fill="currentColor" /> : <Play size={28} className="ml-1" fill="currentColor" />}
                   </button>
-                  
                   {seconds > 0 && (
                     <button onClick={() => {setIsActive(false); setSeconds(0)}} className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 flex items-center justify-center hover:bg-red-500/20 transition-colors">
                       <RotateCcw size={20} />
@@ -79,6 +82,18 @@ export default function ExperiencePage({ params }: { params: Promise<{ experienc
               </div>
             </div>
           </div>
+        )}
+
+        {/* 2. VISTA: COMMUNITY (Aquí inyectamos tu componente de v0) */}
+        {view === 'community' && (
+          <div className="w-full max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+             <CommunityPanel />
+          </div>
+        )}
+
+        {/* VISTA: HISTORY (Por ahora vacío o puedes poner un placeholder) */}
+        {view === 'history' && (
+          <div className="text-white/20 uppercase tracking-widest text-sm">Próximamente: Historial</div>
         )}
 
         {/* DRAWER DERECHO ESTILIZADO */}
@@ -93,7 +108,7 @@ export default function ExperiencePage({ params }: { params: Promise<{ experienc
           <div className={cn("p-10 w-[350px] space-y-10 transition-opacity duration-500", isSidebarOpen ? 'opacity-100 delay-300' : 'opacity-0')}>
              <div className="space-y-2">
                <h3 className="text-xs font-black text-blue-500 tracking-[0.2em] uppercase">Misión Actual</h3>
-               <p className="text-gray-500 text-[11px]">Define tu objetivo para esta sesión de laboratorio.</p>
+               <p className="text-gray-500 text-[11px]">ID de Experiencia: {experienceId}</p>
              </div>
              <div className="space-y-6">
                 <input className="bg-transparent border-b border-white/10 w-full py-4 outline-none text-lg font-light focus:border-blue-500 transition-colors placeholder:text-gray-800" placeholder="¿Qué estás construyendo?" />
