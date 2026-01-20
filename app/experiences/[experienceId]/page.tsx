@@ -12,7 +12,7 @@ import { AchievementsPanel } from './_v0-imports/AchievementsPanel';
 export default function ExperiencePage({ params }: { params: Promise<{ experienceId: string }> }) {
   const { experienceId } = use(params);
   const [view, setView] = useState('focus');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado para controlar el drawer
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleSessionComplete = (session: any) => console.log(session);
   const mockSessions: any[] = []; 
@@ -52,24 +52,20 @@ export default function ExperiencePage({ params }: { params: Promise<{ experienc
           )}
         </div>
 
-        {/* CORRECCIÓN DEL RIGHT DRAWER: 
-          Según tu error, no acepta 'experienceId'. 
-          Le pasamos las props típicas de v0 para este componente.
-        */}
+        {/* AJUSTE FINAL: Quitamos las props que daban error y dejamos las básicas de v0 */}
         <RightDrawer 
           isOpen={isDrawerOpen} 
           onClose={() => setIsDrawerOpen(false)} 
           notes={[]} 
           onAddNote={() => {}} 
-          onUpdateNote={() => {}} 
           onDeleteNote={() => {}} 
         />
         
-        {/* Botón flotante temporal para abrir el drawer si v0 no lo puso */}
+        {/* Botón para abrir el drawer */}
         {!isDrawerOpen && (
           <button 
             onClick={() => setIsDrawerOpen(true)}
-            className="fixed right-4 top-1/2 -translate-y-1/2 bg-blue-600 p-2 rounded-l-lg"
+            className="fixed right-0 top-1/2 -translate-y-1/2 bg-blue-600/20 border border-blue-500/30 p-2 rounded-l-xl text-blue-400 hover:bg-blue-600/40 transition-all"
           >
             ‹
           </button>
