@@ -2,4 +2,9 @@ export * from './FocusTimer';
 export * from './CommunityPanel';
 export * from './AchievementsPanel';
 export * from './RightDrawer';
-export * from './ProjectLab'; // ¡No olvides exportar el nuevo cerebro!
+export * from './Sidebar';
+export * from './Timeline';
+export * from './StagesPanel';
+export * from './SettingsPanel';
+export * from './MobileHeader';
+export * from './ProjectLab';
