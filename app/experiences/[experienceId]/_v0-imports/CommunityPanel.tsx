@@ -1,8 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { cn } from "@/lib/utils"
-import type { Stage } from "@/lib/types"
+import { ExternalLink } from "lucide-react"
+import { ActivityHeatmap } from "@/components/activity-heatmap"
+import type { Stage, Note, Session } from "@/lib/types"
+
+interface CommunityPanelProps {
+  notes: Note[]
+  sessions: Session[]
+  globalNoteStats: Record<Stage, number>
+  onStageClick: (stage: Stage) => void
+}
 
 interface UserStats {
   id: string
@@ -10,17 +19,17 @@ interface UserStats {
   avatar: string
   isActive: boolean
   currentStage: string
-  timeByStage: Record<Stage, number> // tiempo en segundos
-  notesByStage: Record<Stage, number> // cantidad de notas
+  timeByStage: Record<Stage, number>
+  notesByStage: Record<Stage, number>
 }
 
-const STAGES: { key: Stage; label: string; color: string }[] = [
-  { key: "planificacion", label: "Planificación", color: "bg-blue-500" },
-  { key: "diseno", label: "Diseño", color: "bg-purple-500" },
-  { key: "ejecucion", label: "Ejecución", color: "bg-green-500" },
-  { key: "monitoreo", label: "Monitoreo", color: "bg-yellow-500" },
-  { key: "ajuste", label: "Ajuste", color: "bg-orange-500" },
-  { key: "cierre", label: "Cierre", color: "bg-red-500" },
+const STAGES: { key: Stage; label: string; color: string; textColor: string }[] = [
+  { key: "planificacion", label: "Planificación", color: "bg-blue-500", textColor: "text-blue-400" },
+  { key: "diseno", label: "Diseño", color: "bg-purple-500", textColor: "text-purple-400" },
+  { key: "ejecucion", label: "Ejecución", color: "bg-green-500", textColor: "text-green-400" },
+  { key: "monitoreo", label: "Monitoreo", color: "bg-yellow-500", textColor: "text-yellow-400" },
+  { key: "ajuste", label: "Ajuste", color: "bg-orange-500", textColor: "text-orange-400" },
+  { key: "cierre", label: "Cierre", color: "bg-red-500", textColor: "text-red-400" },
 ]
 
 // Mock data - será reemplazado por Supabase
@@ -160,7 +169,7 @@ function formatTimeShort(seconds: number): string {
   return `${minutes}m`
 }
 
-export function CommunityPanel() {
+export function CommunityPanel({ notes, sessions, globalNoteStats, onStageClick }: CommunityPanelProps) {
   const [users, setUsers] = useState<UserStats[]>(mockUsers)
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
 
@@ -177,22 +186,29 @@ export function CommunityPanel() {
     return () => clearInterval(interval)
   }, [])
 
-  // Calcular estadísticas globales
-  const globalTimeByStage = STAGES.map((stage) => ({
-    ...stage,
-    totalTime: users.reduce((acc, user) => acc + user.timeByStage[stage.key], 0),
-  }))
+  // Estadísticas globales de tiempo (mock + real data when connected)
+  const globalTimeByStage = useMemo(
+    () =>
+      STAGES.map((stage) => ({
+        ...stage,
+        totalTime: users.reduce((acc, user) => acc + user.timeByStage[stage.key], 0),
+      })),
+    [users],
+  )
 
-  const globalNotesByStage = STAGES.map((stage) => ({
-    ...stage,
-    totalNotes: users.reduce((acc, user) => acc + user.notesByStage[stage.key], 0),
-  }))
+  // Estadísticas reales de notas desde el estado global
+  const realNotesByStage = useMemo(
+    () =>
+      STAGES.map((stage) => ({
+        ...stage,
+        totalNotes: globalNoteStats[stage.key],
+      })),
+    [globalNoteStats],
+  )
 
   const totalGlobalTime = globalTimeByStage.reduce((acc, s) => acc + s.totalTime, 0)
-  const totalGlobalNotes = globalNotesByStage.reduce((acc, s) => acc + s.totalNotes, 0)
+  const totalGlobalNotes = Object.values(globalNoteStats).reduce((a, b) => a + b, 0)
   const activeUsers = users.filter((u) => u.isActive).length
-
-  const selectedUserData = users.find((u) => u.id === selectedUser)
 
   return (
     <div className="flex-1 flex flex-col p-4 sm:p-6 md:p-8 overflow-y-auto">
@@ -201,6 +217,11 @@ export function CommunityPanel() {
         <div className="text-center mb-6">
           <h2 className="text-lg md:text-xl tracking-[0.2em] text-white mb-2">COMUNIDAD</h2>
           <p className="text-[10px] md:text-xs text-white/40">{activeUsers} usuarios activos ahora</p>
+        </div>
+
+        {/* Heatmap de Actividad */}
+        <div className="mb-6">
+          <ActivityHeatmap sessions={sessions} userSessions={sessions} />
         </div>
 
         {/* Estadísticas Globales de Tiempo */}
@@ -238,24 +259,64 @@ export function CommunityPanel() {
           </div>
         </div>
 
-        {/* Estadísticas Globales de Notas */}
+        {/* Kanban Global de Notas - CLICKABLE */}
         <div className="mb-6 p-4 rounded-lg border border-white/10 bg-white/5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs tracking-[0.15em] text-white/70">NOTAS EN KANBAN GLOBAL</h3>
+            <h3 className="text-xs tracking-[0.15em] text-white/70">KANBAN GLOBAL DE NOTAS</h3>
             <span className="text-[10px] text-electric-blue">{totalGlobalNotes} notas total</span>
           </div>
+          <p className="text-[10px] text-white/30 mb-3">Haz clic en una etapa para ver sus notas</p>
 
-          {/* Grid de notas por etapa */}
+          {/* Grid de notas por etapa - CLICKABLE */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {globalNotesByStage.map((stage) => (
-              <div key={stage.key} className="p-3 rounded-lg bg-white/5 border border-white/10 text-center">
-                <div className={cn("w-full h-1 rounded-full mb-2", stage.color)} />
-                <p className="text-lg md:text-xl font-medium text-white">{stage.totalNotes}</p>
-                <p className="text-[10px] text-white/50">{stage.label}</p>
-              </div>
+            {realNotesByStage.map((stage) => (
+              <button
+                key={stage.key}
+                onClick={() => onStageClick(stage.key)}
+                className={cn(
+                  "group p-3 rounded-lg bg-white/5 border border-white/10 text-center transition-all",
+                  "hover:border-electric-blue/50 hover:bg-electric-blue/5",
+                  "active:scale-95",
+                )}
+              >
+                <div className={cn("w-full h-1 rounded-full mb-2 transition-all", stage.color)} />
+                <p className={cn("text-xl md:text-2xl font-medium text-white transition-colors", "group-hover:text-electric-blue")}>
+                  {stage.totalNotes}
+                </p>
+                <div className="flex items-center justify-center gap-1">
+                  <p className="text-[10px] text-white/50 group-hover:text-white/70 transition-colors">{stage.label}</p>
+                  <ExternalLink size={8} className="opacity-0 group-hover:opacity-100 text-electric-blue transition-opacity" />
+                </div>
+              </button>
             ))}
           </div>
         </div>
+
+        {/* Resumen rápido de notas recientes */}
+        {notes.length > 0 && (
+          <div className="mb-6 p-4 rounded-lg border border-electric-blue/20 bg-electric-blue/5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs tracking-[0.15em] text-electric-blue/70">NOTAS RECIENTES</h3>
+              <span className="text-[10px] text-white/40">Últimas {Math.min(notes.length, 3)}</span>
+            </div>
+            <div className="space-y-2">
+              {notes.slice(-3).reverse().map((note) => {
+                const stageInfo = STAGES.find((s) => s.key === note.stage)
+                return (
+                  <button
+                    key={note.id}
+                    onClick={() => onStageClick(note.stage)}
+                    className="w-full flex items-center gap-3 p-2 rounded bg-white/5 hover:bg-white/10 transition-colors text-left"
+                  >
+                    <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", stageInfo?.color)} />
+                    <span className="text-xs text-white truncate flex-1">{note.title}</span>
+                    {note.week && <span className="text-[10px] text-white/30">S{note.week}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Lista de Usuarios con estadísticas */}
         <div className="mb-4">
