@@ -2,15 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
-import type { Session, Stage } from "@/lib/types"
+import { Target } from "lucide-react"
+import type { Session, Stage, Note } from "@/lib/types"
 
 interface FocusTimerProps {
   onSessionComplete: (session: Session) => void
+  onTimerStateChange?: (isRunning: boolean) => void
   currentWeek: number
   currentStage: Stage
+  activeNote: Note | null
 }
 
-export function FocusTimer({ onSessionComplete, currentWeek, currentStage }: FocusTimerProps) {
+export function FocusTimer({
+  onSessionComplete,
+  onTimerStateChange,
+  currentWeek,
+  currentStage,
+  activeNote,
+}: FocusTimerProps) {
   const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -28,6 +37,11 @@ export function FocusTimer({ onSessionComplete, currentWeek, currentStage }: Foc
       if (interval) clearInterval(interval)
     }
   }, [isRunning])
+
+  // Notificar cambios en el estado del timer
+  useEffect(() => {
+    onTimerStateChange?.(isRunning)
+  }, [isRunning, onTimerStateChange])
 
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600)
@@ -56,22 +70,31 @@ export function FocusTimer({ onSessionComplete, currentWeek, currentStage }: Foc
       const session: Session = {
         id: sessionId,
         week: currentWeek,
-        stage: currentStage,
+        stage: activeNote?.stage || currentStage,
         duration: time,
         startedAt: new Date(Date.now() - time * 1000).toISOString(),
         endedAt: new Date().toISOString(),
+        noteId: activeNote?.id, // Vincular tiempo a la nota activa
       }
       onSessionComplete(session)
       setTime(0)
       setIsRunning(false)
       setSessionId(null)
     }
-  }, [time, sessionId, currentWeek, currentStage, onSessionComplete])
+  }, [time, sessionId, currentWeek, currentStage, activeNote, onSessionComplete])
 
   return (
-    <div className="relative flex flex-col items-center gap-6 md:gap-8 w-full max-w-xs md:max-w-none">
+    <div className="relative flex flex-col items-center gap-4 md:gap-6 w-full max-w-xs md:max-w-none">
+      {/* Indicador de objetivo activo - mini version */}
+      {activeNote && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-electric-blue/10 border border-electric-blue/30">
+          <Target size={12} className="text-electric-blue" />
+          <span className="text-[10px] text-electric-blue truncate max-w-32">{activeNote.title}</span>
+        </div>
+      )}
+
       {/* Círculo del cronómetro - smaller on mobile */}
-      <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80">
+      <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72">
         {/* Efecto glow */}
         <div
           className={cn(
