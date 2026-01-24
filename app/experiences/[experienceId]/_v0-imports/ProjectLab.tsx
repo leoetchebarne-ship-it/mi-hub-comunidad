@@ -14,7 +14,7 @@ import {
   MobileHeader 
 } from "./index" 
 
-// Importamos los nuevos componentes tácticos (ajusta la ruta si los moviste de carpeta)
+// Importamos los nuevos componentes tácticos
 import { NextStepsPanel } from "./next-steps-panel"
 import { MobileNotesList } from "./mobile-notes-list"
 import { CommandCenterModal } from "./command-center-modal"
@@ -39,7 +39,6 @@ import {
 } from "@/lib/supabase"
 import type { Session, Note, Stage, DrawerFilter, NoteTimeStats, Project } from "@/lib/types"
 
-// Añadimos el experienceId como prop para Whop
 export function ProjectLab({ experienceId }: { experienceId: string }) {
   const [activeTab, setActiveTab] = useState<"focus" | "community" | "achievements" | "settings">("focus")
   const [selectedWeek, setSelectedWeek] = useState(1)
@@ -49,30 +48,25 @@ export function ProjectLab({ experienceId }: { experienceId: string }) {
   const [stagesOpen, setStagesOpen] = useState(false)
   const [commandCenterOpen, setCommandCenterOpen] = useState(false)
 
-  // Estados de Proyecto y Onboarding
   const [project, setProject] = useState<Project | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
-  // Gestión de Notas Activas
   const [activeNote, setActiveNote] = useState<Note | null>(null)
   const [lastActiveNote, setLastActiveNote] = useState<Note | null>(null)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [showMobileFocusConfirmation, setShowMobileFocusConfirmation] = useState(false)
   const [pendingActiveNote, setPendingActiveNote] = useState<Note | null>(null)
 
-  // Filtros
   const [drawerFilter, setDrawerFilter] = useState<DrawerFilter>({
     stage: null,
     fromCommunity: false,
   })
 
-  // Data State (Source of Truth)
   const [sessions, setSessions] = useState<Session[]>([])
   const [notes, setNotes] = useState<Note[]>([])
   const [noteTimeStats, setNoteTimeStats] = useState<NoteTimeStats[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // 1. Cargar datos de Supabase al iniciar
   useEffect(() => {
     async function loadInitialData() {
       if (!isSupabaseConfigured) {
@@ -92,20 +86,18 @@ export function ProjectLab({ experienceId }: { experienceId: string }) {
     loadInitialData()
   }, [])
 
-  // 2. Handlers de Supabase (Optimistic Updates)
   const handleSaveSession = useCallback(async (session: Session) => {
     setSessions((prev) => [...prev, session])
     await insertSession(session)
     
     if (session.noteId) {
-      // Actualizar stats de tiempo local y db
       setNoteTimeStats((prev) => {
         const existing = prev.find((s) => s.noteId === session.noteId)
         const updated = existing 
           ? { ...existing, totalTime: existing.totalTime + session.duration, sessionsCount: existing.sessionsCount + 1 }
           : { noteId: session.noteId!, totalTime: session.duration, sessionsCount: 1 }
         
-        upsertNoteTimeStats(updated) // Async sin bloquear
+        upsertNoteTimeStats(updated)
         return existing ? prev.map(s => s.noteId === session.noteId ? updated : s) : [...prev, updated]
       })
       const note = notes.find((n) => n.id === session.noteId)
@@ -125,7 +117,6 @@ export function ProjectLab({ experienceId }: { experienceId: string }) {
     if (newProject.activeStages.length > 0) setCurrentStage(newProject.activeStages[0])
   }, [])
 
-  // 3. Lógica de Interfaz
   const handleOpenDrawer = useCallback(() => {
     setDrawerFilter({ stage: null, fromCommunity: false })
     setDrawerOpen(true)
@@ -238,7 +229,26 @@ export function ProjectLab({ experienceId }: { experienceId: string }) {
             <CommunityPanel 
               notes={notes} 
               sessions={sessions} 
-              onStageClick={(s) => { setDrawerFilter({ stage: s, fromCommunity: true }); setDrawerOpen(true); }}
+              onStageClick={(s) => { 
+                setDrawerFilter({ stage: s, fromCommunity: true }); 
+                setDrawerOpen(true); 
+              }}
+              globalNoteStats={useMemo(() => {
+                const stats: Record<Stage, number> = {
+                  planificacion: 0, 
+                  diseno: 0, 
+                  ejecucion: 0, 
+                  monitoreo: 0, 
+                  ajuste: 0, 
+                  cierre: 0
+                };
+                notes.forEach(note => {
+                  if (stats[note.stage] !== undefined) {
+                    stats[note.stage]++;
+                  }
+                });
+                return stats;
+              }, [notes])}
             />
           )}
           {activeTab === "achievements" && <AchievementsPanel sessions={sessions} />}
@@ -258,7 +268,6 @@ export function ProjectLab({ experienceId }: { experienceId: string }) {
 
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} isMobile={true} />
 
-      {/* Modales y Wizards */}
       <OnboardingWizard isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} onComplete={handleCreateProject} />
       
       <CommandCenterModal 
