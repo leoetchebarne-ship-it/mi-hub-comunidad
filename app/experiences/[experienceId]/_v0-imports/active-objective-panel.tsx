@@ -27,15 +27,14 @@ const ACTION_ICONS: Record<ActionBlockType, typeof Check> = {
 }
 
 export function ActiveObjectivePanel({ note, onClear, isTimerRunning }: ActiveObjectivePanelProps) {
-  // Obtener los próximos 2 checks pendientes
   const pendingTasks = useMemo(() => {
     if (!note) return []
 
-    const tasks = note.actionBlocks
+    // CORRECCIÓN: Añadido || [] para evitar error de undefined
+    const tasks = (note.actionBlocks || [])
       .filter((b) => b.type === "task" && !b.completed)
       .slice(0, 2)
 
-    // Si no hay suficientes tasks de actionBlocks, incluir checklist legacy
     if (tasks.length < 2 && note.checklist) {
       const legacyPending = note.checklist
         .filter((t) => !t.completed)
@@ -80,7 +79,6 @@ export function ActiveObjectivePanel({ note, onClear, isTimerRunning }: ActiveOb
               : "border-electric-blue/30 bg-electric-blue/5",
           )}
         >
-          {/* Header con icono y botón cerrar */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-2">
               <div
@@ -106,10 +104,8 @@ export function ActiveObjectivePanel({ note, onClear, isTimerRunning }: ActiveOb
             )}
           </div>
 
-          {/* Título de la nota */}
           <h4 className="text-sm text-white font-medium mb-3 line-clamp-2">{note.title}</h4>
 
-          {/* Proyecto/Semana */}
           <div className="flex items-center gap-2 mb-3">
             <div className={cn("w-1.5 h-1.5 rounded-full", stageInfo.bgColor)} />
             <span className="text-[10px] text-white/50">
@@ -117,7 +113,6 @@ export function ActiveObjectivePanel({ note, onClear, isTimerRunning }: ActiveOb
             </span>
           </div>
 
-          {/* Próximos checks pendientes */}
           {pendingTasks.length > 0 && (
             <div className="space-y-2">
               <span className="text-[9px] tracking-[0.1em] text-white/40 block">PRÓXIMOS PASOS</span>
@@ -138,7 +133,6 @@ export function ActiveObjectivePanel({ note, onClear, isTimerRunning }: ActiveOb
             </div>
           )}
 
-          {/* Indicador de sesión activa */}
           {isTimerRunning && (
             <div className="mt-3 pt-3 border-t border-electric-blue/20">
               <div className="flex items-center gap-2">
