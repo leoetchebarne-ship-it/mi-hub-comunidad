@@ -1,3 +1,4 @@
+// Definición de las etapas del proyecto
 export type Stage = "planificacion" | "diseno" | "ejecucion" | "monitoreo" | "ajuste" | "cierre"
 
 export type ActionBlockType = "task" | "milestone" | "issue"
@@ -6,23 +7,22 @@ export interface ActionBlock {
   id: string
   type: ActionBlockType
   content: string
-  completed?: boolean // solo para tasks
+  completed?: boolean
 }
 
 export interface Session {
   id: string
   week: number
   stage: Stage
-  duration: number // en segundos
+  duration: number
   startedAt: string
   endedAt: string
-  noteId?: string // ID de la nota activa durante la sesión
+  noteId?: string
 }
 
-// Tracking de tiempo por nota
 export interface NoteTimeStats {
   noteId: string
-  totalTime: number // en segundos
+  totalTime: number
   sessionsCount: number
 }
 
@@ -31,17 +31,18 @@ export interface ChecklistItem {
   completed: boolean
 }
 
+// Interfaz Note corregida para ser compatible con el formulario de creación
 export interface Note {
   id: string
-  week: number | null // null = sin asignar a semana específica
+  week: number | null
   stage: Stage
   title: string
-  objective: string
-  milestone: string
+  objective?: string    // Ahora es opcional
+  milestone?: string    // Ahora es opcional
   checklist: ChecklistItem[]
-  actionBlocks: ActionBlock[] // Bloques de acción dinámicos
+  actionBlocks?: ActionBlock[] // Opcional para evitar errores al crear notas nuevas
   createdAt: string
-  updatedAt: string
+  updatedAt?: string    // Opcional porque no existe en el momento de creación
 }
 
 export interface User {
@@ -52,29 +53,24 @@ export interface User {
   isActive: boolean
 }
 
+// Interfaz para el filtrado del cajón lateral
 export interface DrawerFilter {
   stage: Stage | null
   fromCommunity: boolean
 }
 
-// Proyecto/Operativo
 export interface Project {
   id: string
   name: string
   objective: string
   activeStages: Stage[]
-  weekMilestones: Record<number, string> // semana -> hito
+  weekMilestones: Record<number, string>
   createdAt: string
   startDate: string
 }
 
-// Heatmap data
 export interface ActivityDay {
   date: string
   minutes: number
-  level: 0 | 1 | 2 | 3 | 4 // intensidad de actividad
-}
-export interface DrawerFilter {
-  stage: Stage | null;
-  fromCommunity: boolean;
+  level: 0 | 1 | 2 | 3 | 4
 }
