@@ -24,6 +24,7 @@ export function RightDrawer({
   allNotes, 
   weekNotes, 
   onAddNote, 
+  onUpdateNote, // Agregado para evitar errores de desestructuración
   onDeleteNote,
   selectedWeek, 
   currentStage,
@@ -80,7 +81,7 @@ export function RightDrawer({
             {drawerFilter.stage ? `NOTAS: ${drawerFilter.stage}` : 'PLANIFICADOR'}
           </h2>
           <button onClick={onClose} className="text-white/40 hover:text-white p-1">
-            <X size={20} />
+            <X size={20} /> {/* CORREGIDO: Tag cerrado correctamente */}
           </button>
         </div>
 
