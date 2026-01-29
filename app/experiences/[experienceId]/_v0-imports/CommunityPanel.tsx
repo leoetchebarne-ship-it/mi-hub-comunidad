@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { ExternalLink } from "lucide-react"
-import { ActivityHeatmap } from "./activity-heatmap"
+import { ActivityHeatmap } from "@/components/activity-heatmap"
 import type { Stage, Note, Session } from "@/lib/types"
 
 interface CommunityPanelProps {
