@@ -74,3 +74,7 @@ export interface ActivityDay {
   minutes: number
   level: 0 | 1 | 2 | 3 | 4 // intensidad de actividad
 }
+export interface DrawerFilter {
+  stage: Stage | null;
+  fromCommunity: boolean;
+}
